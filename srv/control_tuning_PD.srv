@@ -1,4 +1,4 @@
-# temperary service msg to tune the control gain
+# PD tuning srv msg
 
 float64 kp
 float64 kd

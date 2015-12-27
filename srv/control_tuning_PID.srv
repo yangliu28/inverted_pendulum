@@ -1,6 +1,7 @@
-# temperary service msg to tune the control gain
+# PID tuning srv msg
 
 float64 kp
+float64 ki
 float64 kd
 ---
 bool setting_is_done
