@@ -3,20 +3,30 @@
 
 #include <ros/ros.h>
 #include <gazebo_msgs/ApplyJointEffort.h>
+#include <inverted_pendulum/control_tuning_PD.h>
+#include <inverted_pendulum/control_tuning_PID.h>
 
-double g_upright_kp;
-double g_upright_kv;
+double g_pendulum_kp;
+double g_pendulum_kd;
 
-bool pendulumParameterCallback()
+double g_vehicle_kp;
+double g_vehicle_kd;
+
+bool pendulumAngleTuningCallback(inverted_pendulum::control_tuning_PDRequest& request,
+    inverted_pendulum::control_tuning_PDResponse& response)
+{
+    ROS_INFO("pendulum_angle_tuning callback activated");
+    g_pendulum_kp = 
+}
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "inverted_pendulum_controller");
     ros::NodeHandle nh;
 
-    // initialize a service client to apply joint effort
-    ros::ServiceClient apply_joint_effort_client = nh.serviceClient<gazebo_msgs::ApplyJointEffort>(
+    // initialize a service client to apply wheel torque
+    ros::ServiceClient apply_wheel_torque_client = nh.serviceClient<gazebo_msgs::ApplyJointEffort>(
         "/gazebo/apply_joint_effort");
-    gazebo_msgs::ApplyJointEffort apply_joint_effort_srv_msg;
+    gazebo_msgs::ApplyJointEffort apply_wheel_torque_srv_msg;
 
     // make sure apply_joint_effort service is ready
     bool service_ready = false;
@@ -28,10 +38,11 @@ int main(int argc, char** argv) {
     }
     ROS_INFO("/gazebo/apply_joint_effort service is ready");
 
-    // initialize a service server to tune all the parameters in the controller
-    ros::ServiceServer pendulum_parameter_service = 
-        nh.advertiseService("pendulum_parameter", pendulumParameterCallback);
-
+    // initialize service servers to tune control parameters
+    ros::ServiceServer pendulum_angle_tuning_service = 
+        nh.advertiseService("pendulum_angle_tuning", pendulumAngleTuningCallback);
+    ros::ServiceServer vehicle_position_tuning_service = 
+        nh.advertiseService("vehicle_position_tuning", vehiclePositionTuningCallback);
 
 
 
