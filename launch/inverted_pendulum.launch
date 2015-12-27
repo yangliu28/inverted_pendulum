@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+
+  <!-- this will automatically generate the urdf each time this file runs -->
+  <!-- the robot model will be in the parameter server -->
+  <param name="inverted_pendulum_model"
+  command="$(find xacro)/xacro '$(find inverted_pendulum)/urdf/inverted_pendulum.xacro'" />
+
+  <!-- start gazebo -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="paused" value="true"/>
+    <!-- pause simulation so that pendulum will not fall without controller -->
+  </include>
+
+  <!-- spawn the inverted_pendulum in gazebo -->
+  <!-- -param being the args, instead of -file we used to -->
+  <node name="spawn_model" pkg="gazebo_ros" type="spawn_model" args="-param inverted_pendulum_model -urdf -model inverted_pendulum" />
+
+  <!-- start inverted_pendulum_publisher node -->
+  <node name="inverted_pendulum_publisher" pkg="inverted_pendulum" type="inverted_pendulum_publisher" output="screen" />
+
+
+
+</launch>
+
