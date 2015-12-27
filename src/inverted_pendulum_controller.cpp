@@ -9,6 +9,7 @@
 
 
 #include <ros/ros.h>
+#include <math.h>
 #include <gazebo_msgs/ApplyJointEffort.h>
 #include <inverted_pendulum/pendulum_angle.h>
 #include <inverted_pendulum/vehicle_position.h>
@@ -16,8 +17,8 @@
 #include <inverted_pendulum/control_tuning_PID.h>
 
 // control parameters
-double g_pendulum_kp;
-double g_pendulum_kd;
+double g_pendulum_kp = 0.01;
+double g_pendulum_kd = 0.003;
 double g_vehicle_kp;
 double g_vehicle_kd;
 
@@ -86,12 +87,22 @@ int main(int argc, char** argv) {
     ros::ServiceServer vehicle_position_tuning_service = 
         nh.advertiseService("vehicle_position_tuning", vehiclePositionTuningCallback);
 
+    // control loop
+    while (ros::ok()) {
+        // check pendulum angle, exit if it's too large fails
+        if (abs(g_pendulum_angle.position) > M_PI/6) {
+            // exceed the critical point
+            ROS_WARN("control fails, exceeds critical pendulum angle");
+            break;
+        }
 
-
-
-
-// check rotation angle in the control loop, exit if control fails
-
-
+        // 
+        // apply_wheel_torque_srv_msg.joint_name
+        // apply_wheel_torque_srv_msg.effort
+        // apply_wheel_torque_srv_msg.duration
+        apply_wheel_torque_srv_msg.effort =
+            g_pendulum_kp * g_pendulum_angle.position + g_pendulum_kd * g_pendulum_angle.velocity;
+    }
+    return 0;
 }
 
