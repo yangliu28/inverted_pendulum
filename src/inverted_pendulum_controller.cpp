@@ -19,8 +19,8 @@
 const double control_frequency = 100.0;
 
 // control parameters
-double g_pendulum_kp = 1.0;
-double g_pendulum_kd = 0.00;
+double g_pendulum_kp = 50.0;
+double g_pendulum_kd = 2.0;
 double g_vehicle_kp;
 double g_vehicle_kd;
 
@@ -68,13 +68,13 @@ int main(int argc, char** argv) {
     ros::Subscriber vehicle_position_subscriber =
         nh.subscribe("vehicle_position", 1, vehiclePositionCallback);
 
-    // initialize a service client to apply wheel torque
-    ros::ServiceClient apply_wheel_torque_client = nh.serviceClient<gazebo_msgs::ApplyJointEffort>(
+    // initialize a service client to apply vehicle traction
+    ros::ServiceClient apply_vehicle_traction_client = nh.serviceClient<gazebo_msgs::ApplyJointEffort>(
         "/gazebo/apply_joint_effort");
-    gazebo_msgs::ApplyJointEffort apply_wheel_torque_srv_msg;
+    gazebo_msgs::ApplyJointEffort apply_vehicle_traction_srv_msg;
+    apply_vehicle_traction_srv_msg.request.joint_name = "vehicle_joint";
     ros::Duration control_duration(1/control_frequency);
-    apply_wheel_torque_srv_msg.request.duration = control_duration;
-    apply_wheel_torque_srv_msg.request.joint_name = "vehicle_joint";
+    apply_vehicle_traction_srv_msg.request.duration = control_duration;
 
     // make sure apply_joint_effort service is ready
     bool service_ready = false;
@@ -110,9 +110,9 @@ int main(int argc, char** argv) {
         ROS_INFO_STREAM("traction_output: " << traction_output);
         ROS_INFO_STREAM("");
         // conversion from traction to torque exerted on four wheels
-        apply_wheel_torque_srv_msg.request.effort = traction_output;
+        apply_vehicle_traction_srv_msg.request.effort = traction_output;
         // send out srv msg
-        apply_wheel_torque_client.call(apply_wheel_torque_srv_msg);
+        apply_vehicle_traction_client.call(apply_vehicle_traction_srv_msg);
 
         // update global data
         ros::spinOnce();

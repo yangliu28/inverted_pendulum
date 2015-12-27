@@ -19,6 +19,12 @@
   <!-- start inverted_pendulum_publisher node -->
   <node name="inverted_pendulum_publisher" pkg="inverted_pendulum" type="inverted_pendulum_publisher" output="screen" />
 
+  <!-- start inverted_pendulum_disturbance node -->
+  <node name="inverted_pendulum_disturbance" pkg="inverted_pendulum" type="inverted_pendulum_disturbance" output="screen" />
+
+  <!-- start inverted_pendulum_controller node -->
+  <!-- controller start with others, because gazebo is paused when started -->
+  <node name="inverted_pendulum_controller" pkg="inverted_pendulum" type="inverted_pendulum_controller" output="screen" />
 
 
 </launch>
