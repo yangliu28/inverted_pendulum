@@ -1,2 +1,7 @@
-# service msg for 
+# temperary service msg to tune the control gain
+
+float64 kp
+float64 kd
+---
+bool setting_is_done
 
