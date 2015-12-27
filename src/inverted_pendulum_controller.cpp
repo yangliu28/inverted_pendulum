@@ -16,9 +16,12 @@
 #include <inverted_pendulum/control_tuning_PD.h>
 #include <inverted_pendulum/control_tuning_PID.h>
 
+const double wheel_radius = 0.02;
+const double control_frequency = 100.0;
+
 // control parameters
-double g_pendulum_kp = 0.01;
-double g_pendulum_kd = 0.003;
+double g_pendulum_kp = 1.0;
+double g_pendulum_kd = 0.05;
 double g_vehicle_kp;
 double g_vehicle_kd;
 
@@ -70,6 +73,8 @@ int main(int argc, char** argv) {
     ros::ServiceClient apply_wheel_torque_client = nh.serviceClient<gazebo_msgs::ApplyJointEffort>(
         "/gazebo/apply_joint_effort");
     gazebo_msgs::ApplyJointEffort apply_wheel_torque_srv_msg;
+    ros::Duration control_duration(1/control_frequency);
+    apply_wheel_torque_srv_msg.request.duration = control_duration;
 
     // make sure apply_joint_effort service is ready
     bool service_ready = false;
@@ -82,11 +87,14 @@ int main(int argc, char** argv) {
     ROS_INFO("/gazebo/apply_joint_effort service is ready");
 
     // initialize service servers to tune control parameters
+    // these service will be called directly from terminal, no extra client node
     ros::ServiceServer pendulum_angle_tuning_service = 
         nh.advertiseService("pendulum_angle_tuning", pendulumAngleTuningCallback);
     ros::ServiceServer vehicle_position_tuning_service = 
         nh.advertiseService("vehicle_position_tuning", vehiclePositionTuningCallback);
 
+    ros::Rate naptime(control_frequency);
+    double traction_output;  // control output as traction to the vehicle
     // control loop
     while (ros::ok()) {
         // check pendulum angle, exit if it's too large fails
@@ -96,12 +104,26 @@ int main(int argc, char** argv) {
             break;
         }
 
-        // 
-        // apply_wheel_torque_srv_msg.joint_name
-        // apply_wheel_torque_srv_msg.effort
-        // apply_wheel_torque_srv_msg.duration
-        apply_wheel_torque_srv_msg.effort =
+        ROS_INFO_STREAM("pendulum_angle: " << g_pendulum_angle.position);
+        traction_output =
             g_pendulum_kp * g_pendulum_angle.position + g_pendulum_kd * g_pendulum_angle.velocity;
+        ROS_INFO_STREAM("traction_output: " << traction_output);
+        ROS_INFO_STREAM("");
+        // conversion from traction to torque exerted on four wheels
+        apply_wheel_torque_srv_msg.request.effort = traction_output / 4 / wheel_radius;
+        // send out srv msg
+        apply_wheel_torque_srv_msg.request.joint_name = "left_front_joint";
+        apply_wheel_torque_client.call(apply_wheel_torque_srv_msg);
+        apply_wheel_torque_srv_msg.request.joint_name = "left_rear_joint";
+        apply_wheel_torque_client.call(apply_wheel_torque_srv_msg);
+        apply_wheel_torque_srv_msg.request.joint_name = "right_front_joint";
+        apply_wheel_torque_client.call(apply_wheel_torque_srv_msg);
+        apply_wheel_torque_srv_msg.request.joint_name = "right_rear_joint";
+        apply_wheel_torque_client.call(apply_wheel_torque_srv_msg);
+
+        // update global data
+        ros::spinOnce();
+        naptime.sleep();
     }
     return 0;
 }

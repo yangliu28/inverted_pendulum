@@ -79,6 +79,7 @@ int main(int argc, char** argv) {
 
         // publish pendulum angle and vehicle position
         pendulum_angle_publisher.publish(pendulum_angle_msg);
+        // ROS_INFO_STREAM("pendulum_angle: " << pendulum_angle_msg.position);
         vehicle_position_publisher.publish(vehicle_position_msg);
         naptime.sleep();
     }

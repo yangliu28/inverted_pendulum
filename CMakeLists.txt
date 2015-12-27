@@ -16,6 +16,7 @@ catkin_simple()
 
 # Executables
 cs_add_executable(inverted_pendulum_publisher src/inverted_pendulum_publisher.cpp)
+cs_add_executable(inverted_pendulum_controller src/inverted_pendulum_controller.cpp)
 # target_link_libraries(example ${catkin_LIBRARIES})
 
 cs_install()
