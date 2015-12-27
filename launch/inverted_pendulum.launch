@@ -20,6 +20,7 @@
   <node name="inverted_pendulum_publisher" pkg="inverted_pendulum" type="inverted_pendulum_publisher" output="screen" />
 
   <!-- start inverted_pendulum_disturbance node -->
+  <!-- or act as a start trigger, because pendulum won't tilt without a disturbance -->
   <node name="inverted_pendulum_disturbance" pkg="inverted_pendulum" type="inverted_pendulum_disturbance" output="screen" />
 
   <!-- start inverted_pendulum_controller node -->

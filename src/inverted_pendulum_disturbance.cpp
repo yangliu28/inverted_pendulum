@@ -6,8 +6,8 @@
 
 // disturbance as sine
 double g_ampl = 0.1;
-double g_frep = 100;
-double sample_dt = 1/g_frep/12;  // 1/12 of the period of sine
+double g_frep = 139;  // set a prime number here
+double sample_dt = 0.001;
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "inverted_pendulum_disturbance");
@@ -34,10 +34,11 @@ int main(int argc, char** argv) {
     double timecount = 0.0;
     ros::Rate naptime(1/sample_dt);
     double output;
+    double stop_time = 2.0;
     // publish loop
     while (ros::ok()) {
-        if (timecount > 1/g_frep) {
-            timecount = timecount - 1/g_frep;  // not very necessary
+        if (timecount > stop_time) {
+            break;  // stop output, disturbance act as start trigger
         }
 
         // call the service

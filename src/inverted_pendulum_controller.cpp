@@ -19,8 +19,8 @@
 const double control_frequency = 100.0;
 
 // control parameters
-double g_pendulum_kp = 50.0;
-double g_pendulum_kd = 3.0;
+double g_pendulum_kp = 30.0;
+double g_pendulum_kd = 1.0;
 double g_vehicle_kp = 0.0;
 double g_vehicle_kd = 0.0;
 
