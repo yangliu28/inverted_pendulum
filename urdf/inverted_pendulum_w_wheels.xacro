@@ -1,0 +1,173 @@
+<!-- this is my first model of inverted pendulum
+a four wheeled vehicle with inverted pendulum on the top of it
+the friction is distributed to the four wheels
+in the control tunning, the vehicle somehow always loose control
+so another this model will be degraded to a simple model without wheels -->
+
+<?xml version="1.0"?>
+<robot name="inverted_pendulum_w_wheels" xmlns:xacro="http://ros.org/wiki/xacro">
+
+<xacro:property name="M_PI" value="3.14159265" />
+
+<xacro:property name="pendulum_length" value="0.3" />
+
+<xacro:macro name="vehicle_wheel" params="link_name">
+  <link name="${link_name}">
+    <inertial>
+      <mass value="0.1" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0"
+        iyy="0.001" iyz="0.0"
+        izz="0.001" />
+    </inertial>
+
+    <visual>
+      <geometry>
+        <cylinder radius="0.02" length="0.005" />
+      </geometry>
+    </visual>
+
+    <collision>
+      <geometry>
+        <cylinder radius="0.02" length="0.005" />
+      </geometry>
+    </collision>
+  </link>
+</xacro:macro>
+
+
+<link name="vehicle_body">
+  <inertial>
+    <mass value="1.0" />
+    <inertia ixx="0.01" ixy="0.0" ixz="0.0"
+      iyy="0.01" iyz="0.0"
+      izz="0.01" />
+  </inertial>
+
+  <visual>
+    <geometry>
+      <box size="0.1 0.05 0.03"/>
+    </geometry>
+  </visual>
+
+  <collision>
+    <geometry>
+      <box size="0.1 0.05 0.03"/>
+    </geometry>
+  </collision>
+</link>
+
+<gazebo reference="vehicle_body">
+  <material>Gazebo/Grey</material>
+</gazebo>
+
+
+<!-- four wheel links -->
+<xacro:vehicle_wheel link_name="left_front_wheel" />
+<gazebo reference="left_front_wheel">
+  <!-- mark left front wheel as red for orientation -->
+  <material>Gazebo/Red</material>
+  <mu1>100</mu1>
+  <mu2>50</mu2>
+</gazebo>
+
+
+<xacro:vehicle_wheel link_name="left_rear_wheel" />
+<gazebo reference="left_rear_wheel">
+  <material>Gazebo/Grey</material>
+  <mu1>100</mu1>
+  <mu2>50</mu2>
+</gazebo>
+
+
+<xacro:vehicle_wheel link_name="right_front_wheel" />
+<gazebo reference="right_front_wheel">
+  <material>Gazebo/Grey</material>
+  <mu1>100</mu1>
+  <mu2>50</mu2>
+</gazebo>
+
+
+<xacro:vehicle_wheel link_name="right_rear_wheel" />
+<gazebo reference="right_rear_wheel">
+  <material>Gazebo/Grey</material>
+  <mu1>100</mu1>
+  <mu2>50</mu2>
+</gazebo>
+
+
+<!-- four wheel joints -->
+<joint name="left_front_joint" type="continuous">
+  <parent link="vehicle_body" />
+  <child link="left_front_wheel" />
+  <origin rpy="${M_PI/2} 0 0" xyz="0.035 0.03 0"/>
+  <axis xyz="0 0 1" />
+</joint>
+
+<joint name="left_rear_joint" type="continuous">
+  <parent link="vehicle_body" />
+  <child link="left_rear_wheel" />
+  <origin rpy="${M_PI/2} 0 0" xyz="-0.035 0.03 0"/>
+  <axis xyz="0 0 1" />
+</joint>
+
+<joint name="right_front_joint" type="continuous">
+  <parent link="vehicle_body" />
+  <child link="right_front_wheel" />
+  <origin rpy="${M_PI/2} 0 0" xyz="0.035 -0.03 0"/>
+  <axis xyz="0 0 1" />
+</joint>
+
+<joint name="right_rear_joint" type="continuous">
+  <parent link="vehicle_body" />
+  <child link="right_rear_wheel" />
+  <origin rpy="${M_PI/2} 0 0" xyz="-0.035 -0.03 0"/>
+  <axis xyz="0 0 1" />
+</joint>
+
+
+<!-- the inverted pendulum link -->
+<link name="pendulum">
+  <inertial>
+    <mass value="0.1" />
+    <origin xyz="0 0 ${pendulum_length/2}" />
+    <inertia ixx="0.005" ixy="0.0" ixz="0.0"
+      iyy="0.005" iyz="0.0"
+      izz="0.001" />
+  </inertial>
+
+  <visual>
+    <origin xyz="0 0 ${pendulum_length/2}" />
+    <geometry>
+      <cylinder radius="0.005" length="${pendulum_length}" />
+    </geometry>
+  </visual>
+
+  <collision>
+    <origin xyz="0 0 ${pendulum_length/2}" />
+    <geometry>
+      <cylinder radius="0.005" length="${pendulum_length}" />
+    </geometry>
+  </collision>
+</link>
+
+<gazebo reference="pendulum">
+  <material>Gazebo/Blue</material>
+  <!-- <selfCollide>true</selfCollide> -->
+  <!-- why selfCollide is not working with gazebo -->
+  <!-- previous I was trying to use this tag to limit rotation angle by adding two limit blocks, not working -->
+</gazebo>
+
+
+<!-- the inverted pendulum joint -->
+<joint name="pendulum_joint" type="revolute">
+  <parent link="vehicle_body" />
+  <child link="pendulum" />
+  <origin xyz="0 0 0.02"/>
+  <axis xyz="0 1 0" />
+  <limit lower="-${M_PI/2}" upper="${M_PI/2}" effort="10" velocity="10" />
+  <!-- set limit for pendulum to not cross vehicle body -->
+</joint>
+
+
+</robot>
+
