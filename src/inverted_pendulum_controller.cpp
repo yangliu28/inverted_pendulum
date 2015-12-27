@@ -20,9 +20,9 @@ const double control_frequency = 100.0;
 
 // control parameters
 double g_pendulum_kp = 50.0;
-double g_pendulum_kd = 2.0;
-double g_vehicle_kp;
-double g_vehicle_kd;
+double g_pendulum_kd = 3.0;
+double g_vehicle_kp = 0.0;
+double g_vehicle_kd = 0.0;
 
 // robot state as inputs
 inverted_pendulum::pendulum_angle g_pendulum_angle;
@@ -94,6 +94,8 @@ int main(int argc, char** argv) {
         nh.advertiseService("vehicle_position_tuning", vehiclePositionTuningCallback);
 
     ros::Rate naptime(control_frequency);
+    double traction_pendulum_angle = 0.0;
+    double traction_vehicle_position = 0.0;
     double traction_output;  // control output as traction to the vehicle
     // control loop
     while (ros::ok()) {
@@ -104,11 +106,13 @@ int main(int argc, char** argv) {
             break;
         }
 
-        ROS_INFO_STREAM("pendulum_angle: " << g_pendulum_angle.position);
-        traction_output =
-            g_pendulum_kp * g_pendulum_angle.position + g_pendulum_kd * g_pendulum_angle.velocity;
+        // ROS_INFO_STREAM("pendulum_angle: " << g_pendulum_angle.position);
+        traction_pendulum_angle = g_pendulum_kp * g_pendulum_angle.position +
+            g_pendulum_kd * g_pendulum_angle.velocity;
+        traction_vehicle_position = g_vehicle_kp * (0 - g_vehicle_position.position) -
+            g_vehicle_kd * g_vehicle_position.velocity;
+        traction_output = traction_pendulum_angle + traction_vehicle_position;
         ROS_INFO_STREAM("traction_output: " << traction_output);
-        ROS_INFO_STREAM("");
         // conversion from traction to torque exerted on four wheels
         apply_vehicle_traction_srv_msg.request.effort = traction_output;
         // send out srv msg
