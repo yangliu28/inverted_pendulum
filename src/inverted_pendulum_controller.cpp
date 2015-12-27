@@ -16,12 +16,11 @@
 #include <inverted_pendulum/control_tuning_PD.h>
 #include <inverted_pendulum/control_tuning_PID.h>
 
-const double wheel_radius = 0.02;
 const double control_frequency = 100.0;
 
 // control parameters
 double g_pendulum_kp = 1.0;
-double g_pendulum_kd = 0.05;
+double g_pendulum_kd = 0.00;
 double g_vehicle_kp;
 double g_vehicle_kd;
 
@@ -75,6 +74,7 @@ int main(int argc, char** argv) {
     gazebo_msgs::ApplyJointEffort apply_wheel_torque_srv_msg;
     ros::Duration control_duration(1/control_frequency);
     apply_wheel_torque_srv_msg.request.duration = control_duration;
+    apply_wheel_torque_srv_msg.request.joint_name = "vehicle_joint";
 
     // make sure apply_joint_effort service is ready
     bool service_ready = false;
@@ -110,15 +110,8 @@ int main(int argc, char** argv) {
         ROS_INFO_STREAM("traction_output: " << traction_output);
         ROS_INFO_STREAM("");
         // conversion from traction to torque exerted on four wheels
-        apply_wheel_torque_srv_msg.request.effort = traction_output / 4 / wheel_radius;
+        apply_wheel_torque_srv_msg.request.effort = traction_output;
         // send out srv msg
-        apply_wheel_torque_srv_msg.request.joint_name = "left_front_joint";
-        apply_wheel_torque_client.call(apply_wheel_torque_srv_msg);
-        apply_wheel_torque_srv_msg.request.joint_name = "left_rear_joint";
-        apply_wheel_torque_client.call(apply_wheel_torque_srv_msg);
-        apply_wheel_torque_srv_msg.request.joint_name = "right_front_joint";
-        apply_wheel_torque_client.call(apply_wheel_torque_srv_msg);
-        apply_wheel_torque_srv_msg.request.joint_name = "right_rear_joint";
         apply_wheel_torque_client.call(apply_wheel_torque_srv_msg);
 
         // update global data

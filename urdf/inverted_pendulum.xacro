@@ -1,8 +1,8 @@
-<!-- this is a simplified version of inverted pendulum from inverted_pendulum_w_wheels
-without wheels and with linear joint -->
-
 <?xml version="1.0"?>
 <robot name="inverted_pendulum" xmlns:xacro="http://ros.org/wiki/xacro">
+
+<!-- this is a simplified version of inverted pendulum from inverted_pendulum_w_wheels
+without wheels and with linear joint -->
 
 <xacro:property name="M_PI" value="3.14159265" />
 

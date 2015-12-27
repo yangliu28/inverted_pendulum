@@ -1,11 +1,11 @@
+<?xml version="1.0"?>
+<robot name="inverted_pendulum_w_wheels" xmlns:xacro="http://ros.org/wiki/xacro">
+
 <!-- this is my first model of inverted pendulum
 a four wheeled vehicle with inverted pendulum on the top of it
 the friction is distributed to the four wheels
 in the control tunning, the vehicle somehow always loose control
 so another this model will be degraded to a simple model without wheels -->
-
-<?xml version="1.0"?>
-<robot name="inverted_pendulum_w_wheels" xmlns:xacro="http://ros.org/wiki/xacro">
 
 <xacro:property name="M_PI" value="3.14159265" />
 
