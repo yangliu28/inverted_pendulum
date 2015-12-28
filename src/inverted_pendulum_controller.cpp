@@ -24,7 +24,8 @@ const double control_interval = 1/control_frequency;
 // PID for pendulum angle
 double g_pendulum_kp = 40.0;
 double g_pendulum_ki = 0.0;
-double g_pendulum_kd = 8.0;
+// double g_pendulum_kd = 20.0;
+double g_pendulum_kd = 5.0;
 // PID for vehicle position
 double g_vehicle_kp = 0.0;
 double g_vehicle_ki = 0.0;
