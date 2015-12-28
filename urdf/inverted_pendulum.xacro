@@ -40,7 +40,8 @@ without wheels and with linear joint -->
   <child link="vehicle_body" />
   <origin xyz="0 0 0.02"/>
   <axis xyz="1 0 0" />
-  <limit lower="-1" upper="1" effort="10" velocity="10" />
+  <limit lower="-1" upper="1" effort="1000" velocity="1000" />
+  <dynamics damping="0.0" />
 </joint>
 
 <!-- the inverted pendulum link -->
@@ -78,7 +79,7 @@ without wheels and with linear joint -->
   <child link="pendulum" />
   <origin xyz="0 0 0.02"/>
   <axis xyz="0 1 0" />
-  <limit lower="-${M_PI/2}" upper="${M_PI/2}" effort="10" velocity="10" />
+  <limit lower="-${M_PI/2}" upper="${M_PI/2}" effort="1000" velocity="1000" />
   <!-- set limit for pendulum to not cross vehicle body -->
 </joint>
 

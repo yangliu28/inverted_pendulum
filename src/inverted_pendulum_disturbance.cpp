@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
     double timecount = 0.0;
     ros::Rate naptime(1/sample_dt);
     double output;
-    double stop_time = 2.0;
+    double stop_time = 1.0;
     // publish loop
     while (ros::ok()) {
         if (timecount > stop_time) {

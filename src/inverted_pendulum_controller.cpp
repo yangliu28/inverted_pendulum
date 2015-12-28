@@ -7,6 +7,8 @@
     // apply joint effort by call gazebo service: "/gazebo/apply_joint_effort"
     // services for parameter tuning: "pendulum_angle_tuning", "vehicle_position_tuning"
 
+// problem to be solve
+// why is the control signal output is pendulum_angle - vehicle_position?
 
 #include <ros/ros.h>
 #include <math.h>
@@ -17,11 +19,15 @@
 #include <inverted_pendulum/control_tuning_PID.h>
 
 const double control_frequency = 100.0;
+const double control_interval = 1/control_frequency;
 
-// control parameters
+// PID for pendulum angle
 double g_pendulum_kp = 40.0;
-double g_pendulum_kd = 4.0;
+double g_pendulum_ki = 0.0;
+double g_pendulum_kd = 8.0;
+// PID for vehicle position
 double g_vehicle_kp = 0.0;
+double g_vehicle_ki = 0.0;
 double g_vehicle_kd = 0.0;
 
 // robot state as inputs
@@ -38,25 +44,25 @@ void vehiclePositionCallback(const inverted_pendulum::vehicle_position& message_
     g_vehicle_position = message_holder;
 }
 
-// service server callback
-bool pendulumAngleTuningCallback(inverted_pendulum::control_tuning_PDRequest& request,
-    inverted_pendulum::control_tuning_PDResponse& response) {
-    ROS_INFO("pendulum_angle_tuning callback activated");
-    g_pendulum_kp = request.kp;
-    g_pendulum_kd = request.kd;
-    response.setting_is_done = true;
-    return true;
-}
+// // service server callback
+// bool pendulumAngleTuningCallback(inverted_pendulum::control_tuning_PDRequest& request,
+//     inverted_pendulum::control_tuning_PDResponse& response) {
+//     ROS_INFO("pendulum_angle_tuning callback activated");
+//     g_pendulum_kp = request.kp;
+//     g_pendulum_kd = request.kd;
+//     response.setting_is_done = true;
+//     return true;
+// }
 
-// service server callback
-bool vehiclePositionTuningCallback(inverted_pendulum::control_tuning_PDRequest& request,
-    inverted_pendulum::control_tuning_PDResponse& response) {
-    ROS_INFO("pendulum_angle_tuning callback activated");
-    g_vehicle_kp = request.kp;
-    g_vehicle_kd = request.kd;
-    response.setting_is_done = true;
-    return true;
-}
+// // service server callback
+// bool vehiclePositionTuningCallback(inverted_pendulum::control_tuning_PDRequest& request,
+//     inverted_pendulum::control_tuning_PDResponse& response) {
+//     ROS_INFO("pendulum_angle_tuning callback activated");
+//     g_vehicle_kp = request.kp;
+//     g_vehicle_kd = request.kd;
+//     response.setting_is_done = true;
+//     return true;
+// }
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "inverted_pendulum_controller");
@@ -73,7 +79,7 @@ int main(int argc, char** argv) {
         "/gazebo/apply_joint_effort");
     gazebo_msgs::ApplyJointEffort apply_vehicle_traction_srv_msg;
     apply_vehicle_traction_srv_msg.request.joint_name = "vehicle_joint";
-    ros::Duration control_duration(1/control_frequency);
+    ros::Duration control_duration(control_interval);
     apply_vehicle_traction_srv_msg.request.duration = control_duration;
 
     // make sure apply_joint_effort service is ready
@@ -88,14 +94,18 @@ int main(int argc, char** argv) {
 
     // initialize service servers to tune control parameters
     // these service will be called directly from terminal, no extra client node
-    ros::ServiceServer pendulum_angle_tuning_service = 
-        nh.advertiseService("pendulum_angle_tuning", pendulumAngleTuningCallback);
-    ros::ServiceServer vehicle_position_tuning_service = 
-        nh.advertiseService("vehicle_position_tuning", vehiclePositionTuningCallback);
+    // ros::ServiceServer pendulum_angle_tuning_service = 
+    //     nh.advertiseService("pendulum_angle_tuning", pendulumAngleTuningCallback);
+    // ros::ServiceServer vehicle_position_tuning_service = 
+    //     nh.advertiseService("vehicle_position_tuning", vehiclePositionTuningCallback);
 
     ros::Rate naptime(control_frequency);
-    double traction_pendulum_angle = 0.0;
-    double traction_vehicle_position = 0.0;
+    double pendulum_angle_output = 0.0;
+    double pendulum_angle_P, pendulum_angle_I, pendulum_angle_D;
+    pendulum_angle_I = 0.0;
+    double vehicle_position_output = 0.0;
+    double vehicle_position_P, vehicle_position_I, vehicle_position_D;
+    vehicle_position_I = 0.0;
     double traction_output;  // control output as traction to the vehicle
     // control loop
     while (ros::ok()) {
@@ -107,11 +117,19 @@ int main(int argc, char** argv) {
         }
 
         // ROS_INFO_STREAM("pendulum_angle: " << g_pendulum_angle.position);
-        traction_pendulum_angle = g_pendulum_kp * g_pendulum_angle.position +
-            g_pendulum_kd * g_pendulum_angle.velocity;
-        traction_vehicle_position = g_vehicle_kp * (0 - g_vehicle_position.position) -
-            g_vehicle_kd * g_vehicle_position.velocity;
-        traction_output = traction_pendulum_angle - traction_vehicle_position;
+        pendulum_angle_P = g_pendulum_kp * g_pendulum_angle.position;
+        pendulum_angle_I = pendulum_angle_I + g_pendulum_ki * control_interval * g_pendulum_angle.position;
+        pendulum_angle_D = g_pendulum_kd * g_pendulum_angle.velocity;
+        pendulum_angle_output = pendulum_angle_P + pendulum_angle_I + pendulum_angle_D;
+        // ROS_INFO_STREAM("pendulum_angle_output: " << pendulum_angle_output);
+        vehicle_position_P = g_vehicle_kp * (0 - g_vehicle_position.position);
+        vehicle_position_I = vehicle_position_I +
+            g_vehicle_ki * control_interval * (0 - g_vehicle_position.position);
+        vehicle_position_D = -g_vehicle_kd * g_vehicle_position.velocity;
+        vehicle_position_output = vehicle_position_P + vehicle_position_I + vehicle_position_D;
+        // ROS_INFO_STREAM("vehicle_position_output: " << vehicle_position_output);
+        traction_output = pendulum_angle_output - vehicle_position_output;  // why minus?
+        // traction_output = traction_pendulum_angle;
         ROS_INFO_STREAM("traction_output: " << traction_output);
         // conversion from traction to torque exerted on four wheels
         apply_vehicle_traction_srv_msg.request.effort = traction_output;
