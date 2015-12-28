@@ -24,7 +24,6 @@ const double control_interval = 1/control_frequency;
 // PID for pendulum angle
 double g_pendulum_kp = 40.0;
 double g_pendulum_ki = 0.0;
-// double g_pendulum_kd = 20.0;
 double g_pendulum_kd = 5.0;
 // PID for vehicle position
 double g_vehicle_kp = 0.0;
@@ -117,6 +116,7 @@ int main(int argc, char** argv) {
             break;
         }
 
+        // digital implementation of PID
         // ROS_INFO_STREAM("pendulum_angle: " << g_pendulum_angle.position);
         pendulum_angle_P = g_pendulum_kp * g_pendulum_angle.position;
         pendulum_angle_I = pendulum_angle_I + g_pendulum_ki * control_interval * g_pendulum_angle.position;
