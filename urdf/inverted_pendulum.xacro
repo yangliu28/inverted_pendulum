@@ -82,6 +82,39 @@ without wheels and with linear joint -->
   <!-- set limit for pendulum to not cross vehicle body -->
 </joint>
 
+<!-- the fixed mass at the top of the pendulum -->
+<link name="pendulum_mass">
+  <inertial>
+    <mass value="1.0" />
+    <inertia ixx="0.001" ixy="0.0" ixz="0.0"
+      iyy="0.001" iyz="0.0"
+      izz="0.001" />
+  </inertial>
+
+  <visual>
+    <geometry>
+      <sphere radius="0.01" />
+    </geometry>
+  </visual>
+
+  <collision>
+    <geometry>
+      <sphere radius="0.01" />
+    </geometry>
+  </collision>
+</link>
+
+<gazebo reference="pendulum_mass">
+  <material>Gazebo/Blue</material>
+</gazebo>
+
+<!-- fixed joint for pendulum mass -->
+<joint name="pendulum_mass_joint" type="fixed">
+  <parent link="pendulum" />
+  <child link="pendulum_mass" />
+  <origin xyz="0 0 ${pendulum_length}"/>
+</joint>
+
 
 </robot>
 

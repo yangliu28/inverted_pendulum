@@ -19,8 +19,8 @@
 const double control_frequency = 100.0;
 
 // control parameters
-double g_pendulum_kp = 30.0;
-double g_pendulum_kd = 1.0;
+double g_pendulum_kp = 40.0;
+double g_pendulum_kd = 4.0;
 double g_vehicle_kp = 0.0;
 double g_vehicle_kd = 0.0;
 
@@ -111,7 +111,7 @@ int main(int argc, char** argv) {
             g_pendulum_kd * g_pendulum_angle.velocity;
         traction_vehicle_position = g_vehicle_kp * (0 - g_vehicle_position.position) -
             g_vehicle_kd * g_vehicle_position.velocity;
-        traction_output = traction_pendulum_angle + traction_vehicle_position;
+        traction_output = traction_pendulum_angle - traction_vehicle_position;
         ROS_INFO_STREAM("traction_output: " << traction_output);
         // conversion from traction to torque exerted on four wheels
         apply_vehicle_traction_srv_msg.request.effort = traction_output;
